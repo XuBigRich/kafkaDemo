@@ -69,6 +69,22 @@ public class ConsumerDemo2Wrong implements Runnable {
     @Override
     public void run() {
         //这个地方 必须先拉取一下 发到这个分区的消息 ，才可以知道当前分区订阅了哪个主题  所以这个是错的
+        //按照网上给到的答案：
+//            ① 检查这个 consumer 是否可以拉取消息
+//            ② 检查这个 consumer 是否订阅了相应的 topic-partition
+//            ③ 调用 pollForFetches 方法获取相应的 records
+//            ④ 在返回获取的 records 前，发送下一次的 fetch 请求，避免用户在下次请求时线程 block 在 pollForFetches 方法中。
+//            ⑤ 如果在给定的时间内（notExpired）获取不到可用的 records，返回空数据。
+//        ConsumerRecords<String, String> poll = consumer.poll(Duration.ofMillis(1000));
+        // 原因是 ：
+        // 当众多消费者订阅了主题后，消费者要向服务端的coordinate 发送join 请求，而coordinate制定消费策略，需要一定时间去指定 消费策略。
+        // 所以需要通过先拉取消息的方式 辅助 coordinate 制定分区策略，然后再次  kafkaConsumer.assignment() 就可以获取到消费策略了
+        try {
+            //经过测试 通过等待的方式 ，等待获取 主题-分区 消费 分配策略 是不可行的
+            Thread.sleep(20000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         Set<TopicPartition> subjectAllTopicPartition = getSubjectAllTopicPartition(consumer);
         Iterator<TopicPartition> iterator = subjectAllTopicPartition.iterator();
         TopicPartition target = null;

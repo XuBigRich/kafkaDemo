@@ -43,6 +43,12 @@ public class ConsumerDemo1Wrong implements Runnable {
         consumer.subscribe(Arrays.asList(topicName));
     }
 
+    /**
+     * 获取当前消费者被分配的 主题-分区
+     *
+     * @param kafkaConsumer
+     * @return
+     */
     public Set<TopicPartition> getSubjectAllTopicPartition(KafkaConsumer kafkaConsumer) {
         Set<TopicPartition> assignment = kafkaConsumer.assignment();
         return assignment;
@@ -55,9 +61,11 @@ public class ConsumerDemo1Wrong implements Runnable {
      */
     public void consumer() {
         while (!Thread.interrupted()) {
-            ConsumerRecords<String, String> poll = consumer.poll(Duration.ofMillis(1000));
+            //poll这个时间不宜过短，否则可能导致  消费策略还未同步完毕，这个地方就执行完毕了，导致后续没法获取到主题-分区 信息了
+            consumer.poll(Duration.ofMillis(1000));
             //从众多消息中筛选出来 要消费的那个主题
             TopicPartition topicPartition = getTopicPartitions();
+            ConsumerRecords<String, String> poll = consumer.poll(Duration.ofMillis(1000));
             Optional<TopicPartition> optional = Optional.ofNullable(topicPartition);
             //如果存在值，那么使用该值 否则什么也不做
             optional.ifPresent(e -> {
@@ -69,14 +77,18 @@ public class ConsumerDemo1Wrong implements Runnable {
     }
 
     public TopicPartition getTopicPartitions() {
-        //获取当前对象 消费者 获得的消息里面， 分别来自于那些分区
+        //获取当前对象 消费者， 消费主题消息分别来自于那些分区
         Set<TopicPartition> subjectAllTopicPartition = getSubjectAllTopicPartition(consumer);
+        //当众多消费者订阅了主题后，服务端的coordinate ，需要一定时间去指定 消费策略。所以先等等
+//        while (subjectAllTopicPartition.size() == 0) {
+//            subjectAllTopicPartition = getSubjectAllTopicPartition(consumer);
+//        }
         Iterator<TopicPartition> iterator = subjectAllTopicPartition.iterator();
         //这个地方是  主题-分区  而不是主题,所以下面筛选的 主题是不对的。
         TopicPartition target = null;
         while (iterator.hasNext()) {
             TopicPartition topicPartition = iterator.next();
-            //如果一个主题下有多个分区，那么 当接收到信息后， 最后面的分区 总该会替代前面的分区信息。(错误)
+            //如果一个主题下有多个分区，那么 当接收到信息后， 最后面的分区 总该会替代前面的分区信息。
             if (topicPartition.topic().equals(topName)) {
                 //这样 target对象就会被新的 主题-分区 替代，老的 主题-分区  就永远不会被消费到
                 target = topicPartition;

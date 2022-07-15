@@ -28,7 +28,7 @@ public class Consumer {
         properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         properties.put(ConsumerConfig.GROUP_ID_CONFIG, "test");
-        properties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
+        properties.put (ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
         KafkaConsumer<String, String> kafkaConsumer = new KafkaConsumer<String, String>(properties);
         this.properties = properties;
         this.kafkaConsumer = kafkaConsumer;
@@ -52,7 +52,7 @@ public class Consumer {
             Set<TopicPartition> assignment = kafkaConsumer.assignment();
             //遍历所有消费者订阅的主题分区信息
             for (TopicPartition topicPartition : assignment) {
-                //分类处理消费者 订阅的分区信息
+                //分类处理消费者 订阅的分区信息  (这样我感觉不对)
                 if (topicPartition.topic().equals("aaa")) {
                     //如果分区信息为aaa ,那么取出 发送给aaa主题的消息
                     List<ConsumerRecord<String, String>> partitionRecord = records.records(topicPartition);

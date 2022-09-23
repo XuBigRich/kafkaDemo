@@ -41,6 +41,9 @@ public class Produce {
     public static void main(String[] args) {
         Produce produce = new Produce();
         KafkaProducer<String, String> kafkaProducer = produce.kafkaProducer;
-        kafkaProducer.send(new ProducerRecord<String, String>("aaa", "bb"));
+        while (true){
+            kafkaProducer.send(new ProducerRecord<String, String>("aaa", "bb"));
+        }
+
     }
 }

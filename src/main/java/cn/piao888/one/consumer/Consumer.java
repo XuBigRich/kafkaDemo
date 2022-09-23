@@ -25,7 +25,7 @@ public class Consumer {
         properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         properties.put(ConsumerConfig.GROUP_ID_CONFIG, "test");
-        properties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
+//        properties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
         KafkaConsumer<String, String> kafkaConsumer = new KafkaConsumer<String, String>(properties);
         this.properties = properties;
         this.kafkaConsumer = kafkaConsumer;
@@ -41,7 +41,7 @@ public class Consumer {
         KafkaConsumer<String, String> kafkaConsumer = consumer.kafkaConsumer;
         kafkaConsumer.subscribe(Arrays.asList("aaa"));
         while (true) {
-            ConsumerRecords<String, String> records = kafkaConsumer.poll(Duration.ofMillis(1));
+            ConsumerRecords<String, String> records = kafkaConsumer.poll(Duration.ofMillis(1000));
             for (ConsumerRecord<String, String> record : records) {
                 System.out.printf("offset = %d, key = %s, value = %s%n", record.offset(), record.key(), record.value());
             }
